@@ -19,7 +19,7 @@ filtered_df = df[(df['time'] >= '09:15:00') & (df['time'] <= '15:25:00')]
 start_price = filtered_df.iloc[0]['open']  
 end_price = filtered_df.iloc[-1]['close']
 market_movement = end_price - start_price
-
+# option type
 
 if market_movement > 0:
 
@@ -33,7 +33,7 @@ else:
 atm= round(end_price / 100) * 100
 
 if option_type == 'PE':
-        hedge_strike = atm * (1 + 0.02)  
+        hedge_strike = atm * (1 + 0.02)  #strikes
 else:
         hedge_strike = atm * (1 - 0.02)  
         
@@ -104,12 +104,12 @@ def atm_trail_sl_and_exit(df, atm_price):
     
     # next day 9:15 price
     next_day_df = df[df['time'] == '09:15:00']
-    if not next_day_df.empty:  # Ensuring there is data for the next day
+    if not next_day_df.empty:  #in case of expiry
         next_day_price = next_day_df.iloc[0]['open']
         if next_day_price > initial_sl:
             return next_day_df.iloc[0]['time'], next_day_price  # Exit at 9:15 next day immediately
     
-    stored_high = atm_price  # Start with ATM price as stored high
+    stored_high = atm_price  #ATM price as stored high
     
     for i in range(0, len(df), 3): # change to 3 min candle
         three_min_highs = df.iloc[i:i+3]['high'].tolist()
