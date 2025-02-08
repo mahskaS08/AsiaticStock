@@ -19,7 +19,7 @@ filtered_df = df[(df['time'] >= '09:15:00') & (df['time'] <= '15:25:00')]
 start_price = filtered_df.iloc[0]['open']  
 end_price = filtered_df.iloc[-1]['close']
 market_movement = end_price - start_price
-# option type
+
 
 if market_movement > 0:
 
@@ -33,7 +33,7 @@ else:
 atm= round(end_price / 100) * 100
 
 if option_type == 'PE':
-        hedge_strike = atm * (1 + 0.02)  #strikes
+        hedge_strike = atm * (1 + 0.02)  
 else:
         hedge_strike = atm * (1 - 0.02)  
         
@@ -73,6 +73,12 @@ print(atm_symbol)
 hedge_symbol, hedge_price = get_option_price(filtered_options, hedge_strike, option_type)
 print(f"Hedge Strike Price at 3:25 PM: {hedge_price}")
 print(hedge_symbol)
+def apply_slippage(price, is_buy):
+    slippage = 0.005  # 0.5%
+    return price * (1 + slippage) if is_buy else price * (1 - slippage)
+
+atm_price = apply_slippage(atm_price, False)  # Selling ATM
+hedge_price = apply_slippage(hedge_price, True)
 
 
 
@@ -104,12 +110,12 @@ def atm_trail_sl_and_exit(df, atm_price):
     
     # next day 9:15 price
     next_day_df = df[df['time'] == '09:15:00']
-    if not next_day_df.empty:  #in case of expiry
+    if not next_day_df.empty:  # Ensuring there is data for the next day
         next_day_price = next_day_df.iloc[0]['open']
         if next_day_price > initial_sl:
             return next_day_df.iloc[0]['time'], next_day_price  # Exit at 9:15 next day immediately
     
-    stored_high = atm_price  #ATM price as stored high
+    stored_high = atm_price  # Start with ATM price as stored high
     
     for i in range(0, len(df), 3): # change to 3 min candle
         three_min_highs = df.iloc[i:i+3]['high'].tolist()
@@ -177,6 +183,9 @@ def hedge_trail_sl_and_exit(df, hedge_price):
 
 hedge_exit_time, hedge_exit_price = hedge_trail_sl_and_exit(hedge_filtered_df, hedge_price)
 print(f"Hedge Exit Time: {hedge_exit_time}, Hedge Exit Price: {hedge_exit_price}")
+
+exit_price = apply_slippage(exit_price, True)  # Buying back ATM
+hedge_exit_price = apply_slippage(hedge_exit_price, False)
 
 
 pnl= (atm_price - exit_price) + ( hedge_exit_price - hedge_price)
