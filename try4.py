@@ -32,6 +32,7 @@ else:
 
 atm= round(end_price / 100) * 100
 
+#hedge
 if option_type == 'PE':
         hedge_strike = atm * (1 + 0.02)  
 else:
@@ -101,7 +102,7 @@ hedge_filtered_df = df_next_day_options[
 ]
 
 
-import pandas as pd
+
 
 def atm_trail_sl_and_exit(df, atm_price):
     initial_sl = atm_price * 1.05 # 5% above cuz sold
@@ -110,7 +111,7 @@ def atm_trail_sl_and_exit(df, atm_price):
     
     # next day 9:15 price
     next_day_df = df[df['time'] == '09:15:00']
-    if not next_day_df.empty:  # Ensuring there is data for the next day
+    if not next_day_df.empty:  # Ensuring there is data for the next day for case of expiry
         next_day_price = next_day_df.iloc[0]['open']
         if next_day_price > initial_sl:
             return next_day_df.iloc[0]['time'], next_day_price  # Exit at 9:15 next day immediately
